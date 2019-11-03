@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
 const helmet = require('helmet')
@@ -10,8 +11,8 @@ const { requestLogger, errorLogger } = require('./middlewares/logger')
 const { createUser, login } = require('./controllers/auth')
 const Error404 = require('./errors/error404')
 
-
 const { PORT = 3000 } = process.env
+console.log(process.env.SECRET_KEY, process.env.NODE_ENV)
 
 const app = express()
 
