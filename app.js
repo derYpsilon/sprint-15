@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser')
 const usersRoute = require('./routes/users')
 const cardsRoute = require('./routes/cards')
 const auth = require('./middlewares/auth')
+const { requestLogger, errorLogger } = require('./middlewares/logger')
 const { createUser, login } = require('./controllers/auth')
 const Error404 = require('./errors/error404')
 
@@ -26,6 +27,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useCreateIndex: true,
   useFindAndModify: false,
 })
+app.use(requestLogger)
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
@@ -50,6 +52,8 @@ app.use('/cards', cardsRoute)
 app.get('*', (req, res, next) => {
   next(new Error404('Ресурс не найден'))
 })
+
+app.use(errorLogger)
 
 app.use(errors())
 
