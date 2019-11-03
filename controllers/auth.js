@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 
 // eslint-disable-next-line consistent-return
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   if (Object.keys(req.body).length === 0) return res.status(400).send({ message: 'Тело запроса пустое' })
   const {
     name, about, avatar, email, password,
@@ -15,10 +15,14 @@ module.exports.createUser = (req, res) => {
       .then((user) => res.status(201).send({
         _id: user._id, name: user.name, about: user.about, email: user.email,
       }))
-      .catch((err) => res.status(400).send({ message: `Error while creating User -- ${err}` })))
+      .catch(() => {
+        const err = new Error('Ошибка создания пользователя')
+        err.statusCode = 400
+        next(err)
+      }))
 }
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body
 
   return User.findUserByCredentials(email, password)
@@ -36,9 +40,9 @@ module.exports.login = (req, res) => {
           sameSite: true,
         }).send({ message: 'Logged successfully' })
     })
-    .catch((err) => {
-      res
-        .status(401)
-        .send({ message: err.message })
+    .catch((e) => {
+      const err = new Error(e.message)
+      err.statusCode = 401
+      next(err)
     })
 }

@@ -6,6 +6,7 @@ const usersRoute = require('./routes/users')
 const cardsRoute = require('./routes/cards')
 const auth = require('./middlewares/auth')
 const { createUser, login } = require('./controllers/auth')
+const Error404 = require('./errors/error404')
 
 
 const { PORT = 3000 } = process.env
@@ -32,8 +33,13 @@ app.use(auth)
 
 app.use('/users', usersRoute)
 app.use('/cards', cardsRoute)
-app.get('*', (req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' })
+app.get('*', (req, res, next) => {
+  next(new Error404('Ресурс не найден'))
+})
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  res.status(err.statusCode ? err.statusCode : 500).send({ message: err.message })
 })
 
 app.listen(PORT, () => {

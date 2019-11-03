@@ -8,9 +8,9 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, process.env.SECRET_KEY)
   } catch (err) {
-    return res
-      .status(401)
-      .send({ message: 'Необходима авторизация' })
+    err.statusCode = 401
+    err.message = 'Необходима авторизация'
+    next(err)
   }
   req.user = payload
 
