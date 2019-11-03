@@ -30,6 +30,12 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 })
 app.use(requestLogger)
 
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт')
+  }, 0)
+})
+
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     password: Joi.string().required().min(8),
@@ -39,6 +45,7 @@ app.post('/signup', celebrate({
     about: Joi.string().min(2).max(30).required(),
   }),
 }), createUser)
+
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     password: Joi.string().required().min(8),
