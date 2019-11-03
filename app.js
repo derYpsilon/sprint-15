@@ -67,7 +67,8 @@ app.use(errors())
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  res.status(err.statusCode ? err.statusCode : 500).send({ message: err.message })
+  res.status(err.statusCode ? err.statusCode : 500)
+    .send({ message: err.message, mode: process.env.NODE_ENV, secret: process.env.SECRET_KEY })
 })
 
 app.listen(PORT, () => {
