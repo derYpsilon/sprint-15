@@ -12,7 +12,6 @@ const { createUser, login } = require('./controllers/auth')
 const Error404 = require('./errors/error404')
 
 const { PORT = 3000 } = process.env
-console.log(process.env.SECRET_KEY, process.env.NODE_ENV)
 
 const app = express()
 
@@ -29,12 +28,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 })
 app.use(requestLogger)
-
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт')
-  }, 0)
-})
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
