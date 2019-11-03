@@ -7,7 +7,7 @@ const cardSchema = new mongoose.Schema({
     minlength: 2,
     maxlength: 30,
     validate: {
-      validator: (v) => !v.match(/[^a-zA-Zа-яА-Я\s-]/),
+      validator: (v) => !v.match(/[^a-zA-Zа-яА-Я0-9\s-]/),
       message: (props) => `${props.value} is not a valid Name for Card!`,
     },
   },

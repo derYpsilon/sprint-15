@@ -1,6 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const helmet = require('helmet')
+const { celebrate, Joi, errors } = require('celebrate')
 const cookieParser = require('cookie-parser')
 const usersRoute = require('./routes/users')
 const cardsRoute = require('./routes/cards')
@@ -26,8 +27,21 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 })
 
-app.post('/signup', createUser)
-app.post('/signin', login)
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    password: Joi.string().required().min(8),
+    email: Joi.string().email().required(),
+    name: Joi.string().min(2).max(30).required(),
+    avatar: Joi.string().uri().required(),
+    about: Joi.string().min(2).max(30).required(),
+  }),
+}), createUser)
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    password: Joi.string().required().min(8),
+    email: Joi.string().email().required(),
+  }),
+}), login)
 
 app.use(auth)
 
@@ -36,6 +50,8 @@ app.use('/cards', cardsRoute)
 app.get('*', (req, res, next) => {
   next(new Error404('Ресурс не найден'))
 })
+
+app.use(errors())
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
