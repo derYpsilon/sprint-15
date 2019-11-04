@@ -10,7 +10,10 @@ module.exports.getAllUsers = (req, res, next) => {
 
 module.exports.getSingleUser = (req, res, next) => {
   User.findById(req.params.id)
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      if (!user) throw Error
+      res.send({ data: user })
+    })
     .catch(() => next(new Error404('Нет пользователя с таким id')))
 }
 

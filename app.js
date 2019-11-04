@@ -56,7 +56,7 @@ app.use(auth)
 
 app.use('/users', usersRoute)
 app.use('/cards', cardsRoute)
-app.get('*', (req, res, next) => {
+app.use('*', (req, res, next) => {
   next(new Error404('Ресурс не найден'))
 })
 
