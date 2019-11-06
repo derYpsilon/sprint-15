@@ -1,50 +1,55 @@
 const Card = require('../models/card')
+const Error500 = require('../errors/error500')
+const Error404 = require('../errors/error404')
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body
   const owner = req.user._id
 
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send({ message: `Server Controller Error while creating Card -- ${err}` }))
+    .catch((err) => next(new Error500(`Ошибка при создании карточки -- ${err.message}`)))
 }
 
-module.exports.getAllCards = (req, res) => {
+module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .populate('owner')
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Server Controller Error while reading All Cards' }))
+    .catch(() => next(new Error500('Ошибка при чтении всех карточек')))
 }
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.id)
     // eslint-disable-next-line consistent-return
     .then((card) => {
-      if (!card) return Promise.reject(new Error('Такой карты нет'))
-      if (JSON.stringify(card.owner) !== JSON.stringify(req.user._id)) return Promise.reject(new Error('Карта не ваша! Удалить нельзя!'))
+      if (JSON.stringify(card.owner) !== JSON.stringify(req.user._id)) {
+        const notCardOwner = new Error('Карта не ваша! Удалить нельзя!')
+        notCardOwner.statusCode = 403
+        throw notCardOwner
+      }
       Card.remove(card)
         .then((cardToDelete) => res.send(cardToDelete !== null ? { data: card } : { data: 'Nothing to delete' }))
-        .catch((err) => res.status(500).send({ message: err.message }))
+        .catch(() => { throw new Error500('Ошибка при удалении карты') })
     })
-    .catch((err) => res.status(500).send({ message: err.message }))
+    .catch((err) => next(err.statusCode ? err : new Error404('Такой карты нет')))
 }
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Server Controller Error while liking Card' }))
+    .catch(() => next(new Error500('Поставить лайк не получилось')))
 }
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Server Controller Error while disliking Card' }))
+    .catch(() => next(new Error500('Убрать лайк не получилось')))
 }

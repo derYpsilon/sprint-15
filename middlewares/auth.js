@@ -6,11 +6,11 @@ module.exports = (req, res, next) => {
   let payload
 
   try {
-    payload = jwt.verify(token, process.env.SECRET_KEY)
+    payload = jwt.verify(token, process.env.NODE_ENV === 'production' ? process.env.SECRET_KEY : 'dev-secret')
   } catch (err) {
-    return res
-      .status(401)
-      .send({ message: 'Необходима авторизация' })
+    err.statusCode = 401
+    err.message = 'Необходима авторизация'
+    next(err)
   }
   req.user = payload
 
